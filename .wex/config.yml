@@ -1,0 +1,7 @@
+domain: symfony-media.wex
+global:
+  name: symfony-media
+  type: php-package
+  version: 1.0.0
+wex:
+  version: 6.0.141
