@@ -19,7 +19,9 @@ use Wexample\SymfonyMedia\Repository\MediaRepository;
  *
  * A level is listed in the shape symfony-design-system's file explorer reads:
  * `{ id, path, name, type: directory|file, hasChildren, size, modifiedAt }`,
- * with what a media adds — its type, its address, its thumbnail.
+ * with what a media adds — its type, its address, its thumbnail. A path is
+ * the ids of the folders leading to the item, then its own, joined by `/`:
+ * the explorer walks it back up, and names its parts from the folders listed.
  */
 class MediaLibraryService
 {
@@ -70,7 +72,7 @@ class MediaLibraryService
 
         return [
             'id' => (string) $media->getId(),
-            'path' => (string) $media->getId(),
+            'path' => ltrim($this->folderPath($media->getFolder()).'/'.$media->getId(), '/'),
             'name' => $media->getName(),
             'type' => 'file',
             'hasChildren' => false,
@@ -96,13 +98,24 @@ class MediaLibraryService
     {
         return [
             'id' => (string) $folder->getId(),
-            'path' => (string) $folder->getId(),
+            'path' => $this->folderPath($folder),
             'name' => $folder->getName(),
             'type' => 'directory',
             'hasChildren' => ! $folder->getChildren()->isEmpty(),
             'size' => 0,
             'modifiedAt' => $folder->getDateCreated()?->format(DateTimeInterface::ATOM),
         ];
+    }
+
+    private function folderPath(?MediaFolder $folder): string
+    {
+        $ids = [];
+
+        for ($current = $folder; null !== $current; $current = $current->getParent()) {
+            array_unshift($ids, (string) $current->getId());
+        }
+
+        return implode('/', $ids);
     }
 
     public function createFolder(

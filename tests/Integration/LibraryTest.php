@@ -32,7 +32,10 @@ class LibraryTest extends AbstractMediaTestCase
         $this->assertStringContainsString('/thumbnail/160', $next['items'][0]['thumbnailUrl']);
         $this->assertStringStartsWith('/_media/', $next['items'][0]['url']);
 
-        $this->assertSame(['Inside', 'inside.png'], array_column($library->level($photos, 0, 10)['items'], 'name'));
+        $inner = $library->level($photos, 0, 10)['items'];
+        $this->assertSame(['Inside', 'inside.png'], array_column($inner, 'name'));
+        $this->assertSame($photos->getId().'/'.$inner[0]['id'], $inner[0]['path']);
+        $this->assertSame($photos->getId().'/'.$inner[1]['id'], $inner[1]['path']);
     }
 
     public function testAFolderNeitherGoesInsideItselfNorLeavesWhileFull(): void
