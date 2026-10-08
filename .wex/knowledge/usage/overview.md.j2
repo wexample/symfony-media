@@ -10,7 +10,7 @@ private ?Media $cover = null;
 private Collection $attachments;
 ```
 
-Deleting a media still used fails on the foreign key: whether to detach it first is the application's call.
+Deleting a media still used: a ManyToMany link goes with it (Doctrine cascades its join table); a ManyToOne fails on the foreign key unless it says `onDelete: 'SET NULL'` — whether a cover may vanish is the application's call.
 
 ## Storing
 

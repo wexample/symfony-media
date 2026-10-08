@@ -6,10 +6,31 @@ Author: agent:main
 
 ## Avancement
 
-- Backend symfony-media : fait (entités Media / MediaFolder, stockage, miniatures GD
-  webp, voter, `/_media/{id}`, API de la bibliothèque, 14 tests).
-- symfony-media-ds : en cours.
-- symfony-media-demo : à faire.
+Fait et vérifié dans un navigateur (MOJOE/local/design-system, 2026-10-08) :
+dossier créé, trois fichiers envoyés dedans, vignettes webp, fil d'Ariane par
+noms ; dans le formulaire de la démo, médiathèque ouverte en modale, une
+couverture et deux pièces jointes choisies, article enregistré et relu.
+
+- symfony-media : entités, stockage, miniatures GD webp, voter, `/_media/{id}`,
+  API de la bibliothèque (14 tests).
+- symfony-media-ds : page `/media/`, upload via `UploadCompletedEvent`,
+  `MediaPickerType` en modale (6 tests).
+- symfony-media-demo : article avec couverture et pièces jointes.
+- symfony-design-system : explorateur (vignettes, sélection simple, noms de
+  dossiers, slot d'actions), `UploadCompletedEvent`.
+
+## Reste
+
+- Déplacer (glisser-déposer ou action « déplacer vers ») : l'API `move` existe,
+  l'écran ne l'offre pas encore.
+- Recadrage d'image à l'envoi (issue #103).
+- Filtre de types dans le sélecteur (n'offrir que des images pour une
+  couverture) : `UploadRules` côté envoi, un filtre `mimeType` côté liste.
+- Le bouton « Choisir » de la modale tombe sous la ligne de flottaison sur un
+  petit écran : le passer dans le pied de la modale (`actions` de showInTarget).
+- Loader : les traductions d'un template ne vont qu'à sa première instance sur
+  la page ; contourné ici en passant les libellés en props, à corriger à la
+  source dans symfony-loader.
 
 ## Décidé avec le owner
 
