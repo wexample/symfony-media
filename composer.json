@@ -1,11 +1,49 @@
 {
   "name": "wexample/symfony-media",
+  "description": "A media library: files kept for themselves, in folders, served behind an access check, with thumbnails; entities point at them with plain relations",
   "version": "1.0.1",
   "type": "library",
   "license": "MIT",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyMedia\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Wexample\\SymfonyMedia\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "weeger",
+      "email": "romain.weeger@wexample.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.5",
+    "ext-gd": "*",
+    "wexample/symfony-api": ">=11.0.0",
+    "wexample/symfony-helpers": ">=15.0.0",
+    "symfony/mime": "^7.4 || ^8.0",
+    "symfony/security-bundle": "^7.4 || ^8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^13",
+    "wexample/symfony-testing": ">=2.0.0"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
+  "extra": {
+    "install": {
+      "bundle_env": "all"
     }
   }
 }

@@ -4,10 +4,12 @@ Opened: 2026-10-08
 Updated: 2026-10-08
 Author: agent:main
 
-## En attente
+## Avancement
 
-À démarrer quand l'agent qui retravaille le `file-explorer` du design system a
-fini : la médiathèque doit partir de sa version revue.
+- Backend symfony-media : fait (entités Media / MediaFolder, stockage, miniatures GD
+  webp, voter, `/_media/{id}`, API de la bibliothèque, 14 tests).
+- symfony-media-ds : en cours.
+- symfony-media-demo : à faire.
 
 ## Décidé avec le owner
 

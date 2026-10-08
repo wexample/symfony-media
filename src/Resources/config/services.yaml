@@ -1,0 +1,16 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Wexample\SymfonyMedia\:
+        resource: '../../{Repository,Security,Service}'
+
+    Wexample\SymfonyMedia\Controller\:
+        resource: '../../Controller/'
+        tags: ['controller.service_arguments']
+
+    Wexample\SymfonyMedia\Api\Controller\:
+        resource: '../../Api/Controller/'
+        tags: ['controller.service_arguments']
