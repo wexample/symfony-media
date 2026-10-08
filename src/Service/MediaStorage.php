@@ -47,7 +47,7 @@ class MediaStorage
         }
 
         $target = $this->getPath($media);
-        if (! is_dir(dirname($target)) && ! mkdir(dirname($target), 0775, true) && ! is_dir(dirname($target))) {
+        if (! is_dir(dirname($target)) && ! @mkdir(dirname($target), 0775, true) && ! is_dir(dirname($target))) {
             throw new RuntimeException(sprintf('The media directory "%s" cannot be created.', dirname($target)));
         }
 

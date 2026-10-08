@@ -115,8 +115,9 @@ class MediaThumbnailService
         imagealphablending($image, false);
         imagesavealpha($image, true);
 
-        if (! is_dir(dirname($target))) {
-            mkdir(dirname($target), 0775, true);
+        // Two thumbnails asked at once may both find the directory missing.
+        if (! is_dir(dirname($target)) && ! @mkdir(dirname($target), 0775, true) && ! is_dir(dirname($target))) {
+            throw new RuntimeException(sprintf('The thumbnail directory "%s" cannot be created.', dirname($target)));
         }
 
         imagewebp($image, $target, 80);
