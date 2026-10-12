@@ -1,7 +1,7 @@
 # Médiathèque : symfony-media, -ds, -demo
 
 Opened: 2026-10-08
-Updated: 2026-10-08
+Updated: 2026-10-12
 Author: agent:main
 
 ## Avancement
@@ -19,18 +19,20 @@ couverture et deux pièces jointes choisies, article enregistré et relu.
 - symfony-design-system : explorateur (vignettes, sélection simple, noms de
   dossiers, slot d'actions), `UploadCompletedEvent`.
 
-## Reste
+## Reste — clos le 2026-10-12
 
-- Déplacer (glisser-déposer ou action « déplacer vers ») : l'API `move` existe,
-  l'écran ne l'offre pas encore.
-- Recadrage d'image à l'envoi (issue #103).
-- Filtre de types dans le sélecteur (n'offrir que des images pour une
-  couverture) : `UploadRules` côté envoi, un filtre `mimeType` côté liste.
-- Le bouton « Choisir » de la modale tombe sous la ligne de flottaison sur un
-  petit écran : le passer dans le pied de la modale (`actions` de showInTarget).
-- Loader : les traductions d'un template ne vont qu'à sa première instance sur
-  la page ; contourné ici en passant les libellés en props, à corriger à la
-  source dans symfony-loader.
+- Déplacer : glisser-déposer sur un dossier ou un niveau du fil d'Ariane
+  (`movable` de `file-explorer` dans le design system, `move` de l'API).
+- Recadrage et poids des images (#103) : une image de plus de 2560 px est
+  réduite dans le navigateur avant l'envoi (`imageShrinkFile`, option
+  `image_max_size`) ; une image envoyée seule est proposée au recadrage
+  (`image-crop`), ou envoyée telle quelle.
+- Filtre de types : option `accept` de `MediaPickerType` (`image/*` pour la
+  couverture de la démo), qui filtre la liste et le jeton d'envoi.
+- Bouton « Choisir » : déjà visible sur petit écran, dans la barre d'état de
+  l'explorateur depuis la refonte des modales ; rien à faire.
+- Traductions du loader : corrigées à la source (symfony-loader `036e31f`), le
+  contournement par props retiré de media-ds.
 
 ## Décidé avec le owner
 
