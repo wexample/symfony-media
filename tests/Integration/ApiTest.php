@@ -39,6 +39,23 @@ class ApiTest extends AbstractMediaTestCase
         $this->assertSame(1, $data['pagination']['total']);
     }
 
+    public function testALevelKeepsWhatItsAcceptSays(): void
+    {
+        $storage = $this->service(MediaStorage::class);
+        $storage->import($this->png(), 'photo.png');
+        $storage->import($this->text(), 'notes.txt');
+        $this->signIn('ROLE_USER');
+
+        $list = fn (string $accept) => array_column($this->data(
+            $this->service(MediaController::class)->list($this->request('list', ['length' => 10, 'accept' => $accept]))
+        )['items'], 'name');
+
+        $this->assertSame(['photo.png'], $list('image/*'));
+        $this->assertSame(['notes.txt'], $list('.TXT'));
+        $this->assertSame(['notes.txt', 'photo.png'], $list('image/png,text/plain'));
+        $this->assertSame(['notes.txt', 'photo.png'], $list(''));
+    }
+
     public function testTheLibraryIsArrangedByWhoManagesIt(): void
     {
         $controller = $this->service(MediaController::class);

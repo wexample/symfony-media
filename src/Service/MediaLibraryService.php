@@ -38,16 +38,18 @@ class MediaLibraryService
     /**
      * Folders come first, all of them on the first pages; then the media.
      *
-     * @return array{items: list<array<string, mixed>>, total: int}
-     */
-    /**
      * @param bool $withRestricted Whether the reader sees restricted media: the managers do.
+     * @param list<string> $accept The media kept, as an `accept` attribute says them —
+     *   `image/*`, `application/pdf`, `.svg` —; empty, all of them. Folders always.
+     *
+     * @return array{items: list<array<string, mixed>>, total: int}
      */
     public function level(
         ?MediaFolder $folder,
         int $offset,
         int $length,
-        bool $withRestricted = true
+        bool $withRestricted = true,
+        array $accept = []
     ): array {
         $folders = $this->folderRepository->findChildren($folder);
         $items = array_map($this->describeFolder(...), array_slice($folders, $offset, $length));
@@ -56,14 +58,14 @@ class MediaLibraryService
         $mediaLength = $length - count($items);
 
         if ($mediaLength > 0) {
-            foreach ($this->mediaRepository->findInFolder($folder, $mediaOffset, $mediaLength, $withRestricted) as $media) {
+            foreach ($this->mediaRepository->findInFolder($folder, $mediaOffset, $mediaLength, $withRestricted, $accept) as $media) {
                 $items[] = $this->describe($media);
             }
         }
 
         return [
             'items' => $items,
-            'total' => count($folders) + $this->mediaRepository->countInFolder($folder, $withRestricted),
+            'total' => count($folders) + $this->mediaRepository->countInFolder($folder, $withRestricted, $accept),
         ];
     }
 

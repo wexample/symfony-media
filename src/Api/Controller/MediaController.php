@@ -46,6 +46,11 @@ class MediaController extends AbstractApiController
 
     final public const string QUERY_OPTION_FOLDER = 'folder';
 
+    /**
+     * The media kept, comma separated as an `accept` attribute: `image/*`.
+     */
+    final public const string QUERY_OPTION_ACCEPT = 'accept';
+
     final public const int LIST_PAGE_LENGTH = 60;
 
     public function __construct(
@@ -59,13 +64,15 @@ class MediaController extends AbstractApiController
     #[PageQueryOption]
     #[LengthQueryOption(default: self::LIST_PAGE_LENGTH)]
     #[StringQueryOption(key: self::QUERY_OPTION_FOLDER, default: '')]
+    #[StringQueryOption(key: self::QUERY_OPTION_ACCEPT, default: '')]
     public function list(Request $request): ApiResponse
     {
         $this->denyAccessUnlessGranted(MediaVoter::VIEW);
 
         $folder = $this->findFolder((string) self::getQueryOptionValue($request, self::QUERY_OPTION_FOLDER, ''));
+        $accept = array_filter(explode(',', (string) self::getQueryOptionValue($request, self::QUERY_OPTION_ACCEPT, '')));
         $pagination = self::getQueryOptionPagination($request);
-        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE));
+        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE), $accept);
 
         return self::apiResponsePaginated(
             pagination: $pagination->withTotal($level['total']),
