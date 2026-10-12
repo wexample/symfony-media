@@ -54,6 +54,10 @@ class Media extends AbstractEntity implements Stringable
     /**
      * Null at the root of the library.
      */
+    /** Read by the managers of the library only, and through access grants (MediaAccessService): a file sold, a private document. */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    protected bool $restricted = false;
+
     #[ORM\ManyToOne(targetEntity: MediaFolder::class, inversedBy: 'media')]
     #[ORM\JoinColumn(nullable: true)]
     protected ?MediaFolder $folder = null;
@@ -152,6 +156,18 @@ class Media extends AbstractEntity implements Stringable
         $this->folder?->syncMedia($this, false);
         $this->folder = $folder;
         $folder?->syncMedia($this, true);
+
+        return $this;
+    }
+
+    public function isRestricted(): bool
+    {
+        return $this->restricted;
+    }
+
+    public function setRestricted(bool $restricted): static
+    {
+        $this->restricted = $restricted;
 
         return $this;
     }

@@ -65,7 +65,7 @@ class MediaController extends AbstractApiController
 
         $folder = $this->findFolder((string) self::getQueryOptionValue($request, self::QUERY_OPTION_FOLDER, ''));
         $pagination = self::getQueryOptionPagination($request);
-        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH);
+        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE));
 
         return self::apiResponsePaginated(
             pagination: $pagination->withTotal($level['total']),

@@ -35,6 +35,19 @@ wexample_symfony_media:
 
 `Security\MediaVoter` grants `MEDIA_VIEW` and `MEDIA_MANAGE` from the configured roles, with the media or folder as subject, so that an application can add a finer voter.
 
+## Restricted media and access grants
+
+A media marked `restricted` (`setRestricted(true)`) is left out of the library's lists and refused to its readers: only the managers open it. Anyone else downloads it through a grant — a file sold, a private document sent to someone without an account:
+
+```php
+$grant = $mediaAccessService->grant($media, new DateTimeImmutable('+30 days'), maxUses: 5, origin: 'shop_cart_item:'.$item->getId());
+$entityManager->flush();
+
+$url = $mediaAccessService->getUrl($grant);   // absolute, signed, refused once the grant expires
+```
+
+The link (`/_media/grant/{id}`, route `media_grant`) is signed by Symfony's `UriSigner`: tampered with or past its date, it leads nowhere (404). Each download is counted on the grant, its row locked so that two downloads at once cannot both take the last one; a grant used up answers 410. `origin` tells who gave it, in the giver's words; `MediaAccessGrantRepository::findByOrigin()` finds them again.
+
 ## Browsing and arranging
 
 `api/media/list?folder=<id>&page=&length=` lists a level of the library — its folders, then its media, by name — in the shape symfony-design-system's file explorer reads: `{ id, path, name, type: directory|file, hasChildren, size, modifiedAt }`, plus `mimeType`, `width`, `height`, `url` and `thumbnailUrl` for a media. `api/media/folder`, `rename`, `move` and `delete` arrange it, JSON only, an item named `{ type: media|folder, id }`. A folder is never moved inside itself, nor deleted while it holds anything.

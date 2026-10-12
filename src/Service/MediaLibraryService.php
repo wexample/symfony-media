@@ -40,10 +40,14 @@ class MediaLibraryService
      *
      * @return array{items: list<array<string, mixed>>, total: int}
      */
+    /**
+     * @param bool $withRestricted Whether the reader sees restricted media: the managers do.
+     */
     public function level(
         ?MediaFolder $folder,
         int $offset,
-        int $length
+        int $length,
+        bool $withRestricted = true
     ): array {
         $folders = $this->folderRepository->findChildren($folder);
         $items = array_map($this->describeFolder(...), array_slice($folders, $offset, $length));
@@ -52,14 +56,14 @@ class MediaLibraryService
         $mediaLength = $length - count($items);
 
         if ($mediaLength > 0) {
-            foreach ($this->mediaRepository->findInFolder($folder, $mediaOffset, $mediaLength) as $media) {
+            foreach ($this->mediaRepository->findInFolder($folder, $mediaOffset, $mediaLength, $withRestricted) as $media) {
                 $items[] = $this->describe($media);
             }
         }
 
         return [
             'items' => $items,
-            'total' => count($folders) + $this->mediaRepository->countInFolder($folder),
+            'total' => count($folders) + $this->mediaRepository->countInFolder($folder, $withRestricted),
         ];
     }
 
@@ -81,6 +85,7 @@ class MediaLibraryService
             'mimeType' => $media->getMimeType(),
             'width' => $media->getWidth(),
             'height' => $media->getHeight(),
+            'restricted' => $media->isRestricted(),
             'url' => $this->urlGenerator->generate(MediaFileController::ROUTE_FILE_NAME, ['id' => $media->getId()]),
             'thumbnailUrl' => $this->thumbnails->supports($media) && [] !== $thumbnailSizes
                 ? $this->urlGenerator->generate(MediaFileController::ROUTE_THUMBNAIL_NAME, [

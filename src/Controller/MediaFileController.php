@@ -6,14 +6,18 @@ use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\UriSigner;
+use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Uid\Uuid;
 use Wexample\SymfonyMedia\Entity\Media;
+use Wexample\SymfonyMedia\Repository\MediaAccessGrantRepository;
 use Wexample\SymfonyMedia\Repository\MediaRepository;
 use Wexample\SymfonyMedia\Security\MediaVoter;
+use Wexample\SymfonyMedia\Service\MediaAccessService;
 use Wexample\SymfonyMedia\Service\MediaStorage;
 use Wexample\SymfonyMedia\Service\MediaThumbnailService;
 
@@ -24,6 +28,9 @@ use Wexample\SymfonyMedia\Service\MediaThumbnailService;
  * sound, a video — is sent inline; anything else, an SVG or an HTML file
  * among them, which could run a script under the application's address, is
  * downloaded. Every answer is sandboxed all the same.
+ *
+ * A grant's link (MediaAccessService) downloads its media without the
+ * library's roles, as long as its signature and the grant hold.
  */
 #[Route(path: '/_media/', name: 'media_')]
 final class MediaFileController
@@ -35,6 +42,10 @@ final class MediaFileController
     public const string ROUTE_THUMBNAIL = 'thumbnail';
 
     public const string ROUTE_THUMBNAIL_NAME = 'media_thumbnail';
+
+    public const string ROUTE_GRANT = 'grant';
+
+    public const string ROUTE_GRANT_NAME = 'media_grant';
 
     private const array INLINE_TYPES = [
         'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif',
@@ -49,6 +60,9 @@ final class MediaFileController
         private readonly MediaStorage $storage,
         private readonly MediaThumbnailService $thumbnails,
         private readonly AuthorizationCheckerInterface $authorizationChecker,
+        private readonly MediaAccessGrantRepository $grantRepository,
+        private readonly MediaAccessService $accessService,
+        private readonly UriSigner $uriSigner,
     ) {
     }
 
@@ -86,6 +100,34 @@ final class MediaFileController
         }
 
         return $this->respond($path, 'image/webp', ResponseHeaderBag::DISPOSITION_INLINE, $media->getName().'.webp');
+    }
+
+    /**
+     * A link tampered with, or past its date, leads nowhere; a grant used up is gone.
+     */
+    #[Route(path: 'grant/{id}', name: self::ROUTE_GRANT, methods: [Request::METHOD_GET])]
+    public function grant(
+        string $id,
+        Request $request
+    ): BinaryFileResponse {
+        $grant = (Uuid::isValid($id) ? $this->grantRepository->find($id) : null) ?? throw new NotFoundHttpException();
+
+        if (! $this->uriSigner->checkRequest($request)) {
+            throw new NotFoundHttpException();
+        }
+
+        $media = $grant->getMedia();
+        $path = $this->storage->getPath($media);
+
+        if (! is_file($path)) {
+            throw new NotFoundHttpException('The file of this media is missing.');
+        }
+
+        if (! $this->accessService->consume($grant)) {
+            throw new GoneHttpException('This link has been used up or has expired.');
+        }
+
+        return $this->respond($path, (string) $media->getMimeType(), ResponseHeaderBag::DISPOSITION_ATTACHMENT, $media->getName());
     }
 
     private function find(string $id): Media

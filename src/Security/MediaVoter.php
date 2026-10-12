@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Wexample\SymfonyMedia\Entity\Media;
 
 /**
  * Who may browse the library and read its files (`MEDIA_VIEW`), and who may
@@ -42,6 +43,8 @@ final class MediaVoter extends Voter
         TokenInterface $token,
         ?Vote $vote = null
     ): bool {
-        return $this->security->isGranted(self::VIEW === $attribute ? $this->viewRole : $this->manageRole);
+        $restricted = $subject instanceof Media && $subject->isRestricted();
+
+        return $this->security->isGranted(self::VIEW === $attribute && ! $restricted ? $this->viewRole : $this->manageRole);
     }
 }
