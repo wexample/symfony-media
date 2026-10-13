@@ -25,6 +25,8 @@
     "ext-gd": "*",
     "wexample/symfony-api": ">=11.0.0",
     "wexample/symfony-helpers": ">=15.0.0",
+    "wexample/php-pseudocode": ">=2.2.0",
+    "wexample/symfony-pseudocode": ">=3.0.0",
     "symfony/mime": "^7.4 || ^8.0",
     "symfony/security-bundle": "^7.4 || ^8.0"
   },

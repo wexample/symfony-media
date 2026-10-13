@@ -10,12 +10,16 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
+use Wexample\SymfonyApi\Api\Attribute\ApiResponseData;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\LengthQueryOption;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\PageQueryOption;
+use Wexample\SymfonyApi\Api\Attribute\QueryOption\SortQueryOption;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\StringQueryOption;
 use Wexample\SymfonyApi\Api\Class\ApiResponse;
 use Wexample\SymfonyApi\Api\Controller\AbstractApiController;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
+use Wexample\SymfonyMedia\Api\Dto\MediaDto;
+use Wexample\SymfonyMedia\Api\Normalizer\Entity\Media\DefaultMediaNormalizer;
 use Wexample\SymfonyMedia\Entity\Media;
 use Wexample\SymfonyMedia\Entity\MediaFolder;
 use Wexample\SymfonyMedia\Exception\MediaLibraryException;
@@ -29,12 +33,16 @@ use Wexample\SymfonyMedia\Service\MediaLibraryService;
  * anything renamed, moved or deleted. What arranges it takes JSON only, which
  * a page of another site cannot send without asking first.
  *
- * An item is named `{ type: media|folder, id }`.
+ * An item is named `{ type: media|folder, id }`. Its media are also read as
+ * entities, the way symfony-api lists them (`list`), for a screen showing
+ * the files themselves rather than the folders holding them.
  */
 #[Route(path: 'api/media/', name: 'api_media_')]
 class MediaController extends AbstractApiController
 {
     final public const string ROUTE_LIST = 'list';
+
+    final public const string ROUTE_LEVEL = 'level';
 
     final public const string ROUTE_FOLDER = 'folder';
 
@@ -60,19 +68,49 @@ class MediaController extends AbstractApiController
     ) {
     }
 
+    /**
+     * The media, as entities: those of the whole library, or of one folder
+     * (`folder`), kept by an `accept` attribute, the newest first unless
+     * `sort` says otherwise. Their urls are in each item's metadata.
+     */
     #[Route(path: self::ROUTE_LIST, name: self::ROUTE_LIST, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
     #[PageQueryOption]
     #[LengthQueryOption(default: self::LIST_PAGE_LENGTH)]
     #[StringQueryOption(key: self::QUERY_OPTION_FOLDER, default: '')]
     #[StringQueryOption(key: self::QUERY_OPTION_ACCEPT, default: '')]
-    public function list(Request $request): ApiResponse
+    #[SortQueryOption(allowed: ['name', 'dateCreated', 'size'], default: '-dateCreated')]
+    #[ApiResponseData(MediaDto::class, paginated: true)]
+    public function list(
+        Request $request,
+        DefaultMediaNormalizer $normalizer,
+    ): ApiResponse {
+        $this->denyAccessUnlessGranted(MediaVoter::VIEW);
+
+        $query = $this->mediaRepository->createListQueryBuilder(
+            $this->findFolder((string) self::getQueryOptionValue($request, self::QUERY_OPTION_FOLDER, '')),
+            $this->isGranted(MediaVoter::MANAGE),
+            $this->acceptOption($request)
+        );
+
+        return self::apiResponseQueryPage($request, $query, static fn (array $media) => $normalizer->normalizeCollection($media));
+    }
+
+    /**
+     * One level of the library, its folders then its media, as the media
+     * library's explorer walks it.
+     */
+    #[Route(path: self::ROUTE_LEVEL, name: self::ROUTE_LEVEL, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
+    #[PageQueryOption]
+    #[LengthQueryOption(default: self::LIST_PAGE_LENGTH)]
+    #[StringQueryOption(key: self::QUERY_OPTION_FOLDER, default: '')]
+    #[StringQueryOption(key: self::QUERY_OPTION_ACCEPT, default: '')]
+    public function level(Request $request): ApiResponse
     {
         $this->denyAccessUnlessGranted(MediaVoter::VIEW);
 
         $folder = $this->findFolder((string) self::getQueryOptionValue($request, self::QUERY_OPTION_FOLDER, ''));
-        $accept = array_filter(explode(',', (string) self::getQueryOptionValue($request, self::QUERY_OPTION_ACCEPT, '')));
         $pagination = self::getQueryOptionPagination($request);
-        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE), $accept);
+        $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE), $this->acceptOption($request));
 
         return self::apiResponsePaginated(
             pagination: $pagination->withTotal($level['total']),
@@ -165,6 +203,14 @@ class MediaController extends AbstractApiController
     private function describe(Media|MediaFolder $item): array
     {
         return $item instanceof Media ? $this->library->describe($item) : $this->library->describeFolder($item);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function acceptOption(Request $request): array
+    {
+        return array_values(array_filter(explode(',', (string) self::getQueryOptionValue($request, self::QUERY_OPTION_ACCEPT, ''))));
     }
 
     /**

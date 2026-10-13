@@ -5,7 +5,10 @@ namespace Wexample\SymfonyMedia\Tests\Integration;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Wexample\SymfonyApi\Api\Attribute\QueryOption\SortQueryOption;
 use Wexample\SymfonyMedia\Api\Controller\MediaController;
+use Wexample\SymfonyMedia\Api\Normalizer\Entity\Media\DefaultMediaNormalizer;
+use Wexample\SymfonyMedia\Service\MediaLibraryService;
 use Wexample\SymfonyMedia\Service\MediaStorage;
 
 class ApiTest extends AbstractMediaTestCase
@@ -33,7 +36,7 @@ class ApiTest extends AbstractMediaTestCase
         $this->service(MediaStorage::class)->import($this->png(), 'a.png');
         $this->signIn('ROLE_USER');
 
-        $data = $this->data($this->service(MediaController::class)->list($this->request('list', ['length' => 10])));
+        $data = $this->data($this->service(MediaController::class)->level($this->request('level', ['length' => 10])));
 
         $this->assertSame(['a.png'], array_column($data['items'], 'name'));
         $this->assertSame(1, $data['pagination']['total']);
@@ -47,13 +50,48 @@ class ApiTest extends AbstractMediaTestCase
         $this->signIn('ROLE_USER');
 
         $list = fn (string $accept) => array_column($this->data(
-            $this->service(MediaController::class)->list($this->request('list', ['length' => 10, 'accept' => $accept]))
+            $this->service(MediaController::class)->level($this->request('level', ['length' => 10, 'accept' => $accept]))
         )['items'], 'name');
 
         $this->assertSame(['photo.png'], $list('image/*'));
         $this->assertSame(['notes.txt'], $list('.TXT'));
         $this->assertSame(['notes.txt', 'photo.png'], $list('image/png,text/plain'));
         $this->assertSame(['notes.txt', 'photo.png'], $list(''));
+    }
+
+    public function testTheMediaAreListedAsEntitiesWithWhereTheyAreServed(): void
+    {
+        $storage = $this->service(MediaStorage::class);
+        $photos = $this->service(MediaLibraryService::class)->createFolder('Photos');
+        $storage->import($this->png(400, 300), 'b.png', $photos);
+        $storage->import($this->text(), 'a.txt');
+        $storage->import($this->text(), 'c.pdf')->setRestricted(true);
+        $this->entityManager->flush();
+        $this->signIn('ROLE_USER');
+
+        $list = function (array $query) {
+            $request = $this->request('list', ['length' => 10] + $query);
+            $request->attributes->set(SortQueryOption::KEY, 'name');
+
+            return $this->data($this->service(MediaController::class)->list($request, $this->service(DefaultMediaNormalizer::class)));
+        };
+
+        $data = $list([]);
+        $this->assertSame(['a.txt', 'b.png'], array_column(array_column($data['items'], 'entity'), 'name'), 'a restricted media is not listed');
+        $this->assertSame(['media'], array_unique(array_column($data['items'], 'type')));
+        $this->assertSame(2, $data['pagination']['total']);
+
+        $image = $data['items'][1];
+        $this->assertSame([400, 300], [$image['entity']['width'], $image['entity']['height']]);
+        $this->assertStringContainsString($image['entity']['id'], $image['metadata']['url']);
+        $this->assertSame(['160', '480'], array_map('strval', array_keys($image['metadata']['thumbnails'])));
+        $this->assertSame([], $data['items'][0]['metadata']['thumbnails'], 'a text has no thumbnail');
+
+        $this->assertSame(['b.png'], array_column(array_column($list(['accept' => 'image/*'])['items'], 'entity'), 'name'));
+        $this->assertSame(['b.png'], array_column(array_column($list(['folder' => (string) $photos->getId()])['items'], 'entity'), 'name'));
+
+        $this->signIn('ROLE_ADMIN', 'ROLE_USER');
+        $this->assertSame(3, $list([])['pagination']['total'], 'whoever manages the library sees it whole');
     }
 
     public function testTheLibraryIsArrangedByWhoManagesIt(): void

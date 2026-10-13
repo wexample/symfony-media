@@ -47,10 +47,42 @@ class MediaRepository extends AbstractRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * The media a list reads, the whole library or the media of $folder
+     * alone, unordered: the list orders and pages it.
+     *
+     * @param list<string> $accept as an `accept` attribute: MIME types, `type/*`, `.extension`
+     */
+    public function createListQueryBuilder(
+        ?MediaFolder $folder = null,
+        bool $withRestricted = true,
+        array $accept = []
+    ): QueryBuilder {
+        $builder = $this->filtered($withRestricted, $accept);
+
+        return null === $folder
+            ? $builder
+            : $builder->andWhere('media.folder = :folder')->setParameter('folder', $folder->getId(), UuidType::NAME);
+    }
+
     private function inFolder(
         ?MediaFolder $folder,
         bool $withRestricted,
         array $accept = []
+    ): QueryBuilder {
+        $builder = $this->filtered($withRestricted, $accept);
+
+        return null === $folder
+            ? $builder->andWhere('media.folder IS NULL')
+            : $builder->andWhere('media.folder = :folder')->setParameter('folder', $folder->getId(), UuidType::NAME);
+    }
+
+    /**
+     * @param list<string> $accept
+     */
+    private function filtered(
+        bool $withRestricted,
+        array $accept
     ): QueryBuilder {
         $builder = $this->createQueryBuilder('media');
 
@@ -83,8 +115,6 @@ class MediaRepository extends AbstractRepository
             $builder->andWhere(implode(' OR ', $kept));
         }
 
-        return null === $folder
-            ? $builder->andWhere('media.folder IS NULL')
-            : $builder->andWhere('media.folder = :folder')->setParameter('folder', $folder->getId(), UuidType::NAME);
+        return $builder;
     }
 }

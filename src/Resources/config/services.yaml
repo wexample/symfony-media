@@ -14,3 +14,7 @@ services:
     Wexample\SymfonyMedia\Api\Controller\:
         resource: '../../Api/Controller/'
         tags: ['controller.service_arguments']
+
+    Wexample\SymfonyMedia\Api\Normalizer\:
+        resource: '../../Api/Normalizer/*'
+        tags: ['serializer.normalizer']

@@ -5,6 +5,7 @@ namespace Wexample\SymfonyMedia\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 use Wexample\SymfonyHelpers\Entity\Traits\HasDateCreatedTrait;
 use Wexample\SymfonyHelpers\Entity\Traits\HasMimeTypeTrait;
@@ -22,6 +23,7 @@ use Wexample\SymfonyMedia\Repository\MediaRepository;
 #[ORM\Entity(repositoryClass: MediaRepository::class)]
 #[ORM\Table(name: 'media')]
 #[ORM\Index(columns: ['name'])]
+#[PseudocodeExport(inherited: true)]
 class Media extends AbstractEntity implements Stringable
 {
     use HasDateCreatedTrait;

@@ -1,0 +1,337 @@
+{
+    "name": "media",
+    "type": "class",
+    "description": "A file of the library, kept for itself: an entity using it points at it with\na plain relation — a cover as a ManyToOne, attachments as a ManyToMany —, and\nthe same media may serve in several places.\nThe file lies under the storage directory, named after the id\n(MediaStorage): what a person called it is `name`, free to change, and\n`originalName` is what it was called when it arrived.",
+    "properties": [
+        {
+            "name": "dateCreated",
+            "type": "DateTimeInterface",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "mimeType",
+            "type": "string",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "id",
+            "type": "Symfony\\Component\\Uid\\Uuid"
+        },
+        {
+            "name": "name",
+            "type": "string"
+        },
+        {
+            "name": "originalName",
+            "type": "string"
+        },
+        {
+            "name": "extension",
+            "type": "string",
+            "default": ""
+        },
+        {
+            "name": "size",
+            "type": "int",
+            "default": 0
+        },
+        {
+            "name": "width",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "height",
+            "type": "int",
+            "nullable": true,
+            "default": null
+        },
+        {
+            "name": "restricted",
+            "type": "bool",
+            "default": false
+        },
+        {
+            "name": "folder",
+            "type": "MediaFolder",
+            "nullable": true,
+            "default": null
+        }
+    ],
+    "methods": [
+        {
+            "type": "method",
+            "name": "getDateCreated",
+            "return": {
+                "type": "DateTimeInterface"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateCreatedNow",
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDateCreated",
+            "parameters": [
+                {
+                    "type": "DateTimeInterface",
+                    "name": "dateCreated"
+                }
+            ],
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getMimeType",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setMimeType",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "mimeType"
+                }
+            ],
+            "return": {
+                "type": "self"
+            }
+        },
+        {
+            "type": "method",
+            "name": "buildEntityPath",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "className"
+                }
+            ],
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityKeyName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getEntityShortName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getId",
+            "return": {
+                "type": "Symfony\\Component\\Uid\\Uuid"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setId",
+            "parameters": [
+                {
+                    "type": "Symfony\\Component\\Uid\\Uuid",
+                    "name": "id"
+                }
+            ],
+            "return": {
+                "type": "void"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getTableizedName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getCamelName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "__construct",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "originalName"
+                },
+                {
+                    "type": "MediaFolder",
+                    "name": "folder",
+                    "optional": true,
+                    "default": null
+                }
+            ]
+        },
+        {
+            "type": "method",
+            "name": "__toString",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setName",
+            "parameters": [
+                {
+                    "type": "string",
+                    "name": "name"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getOriginalName",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getExtension",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getStorageName",
+            "description": "The name of the stored file: the id, so that two media never collide and\nnothing a person typed reaches the disk.",
+            "return": {
+                "type": "string"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getSize",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setSize",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "size"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getWidth",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getHeight",
+            "return": {
+                "type": "int"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setDimensions",
+            "parameters": [
+                {
+                    "type": "int",
+                    "name": "width"
+                },
+                {
+                    "type": "int",
+                    "name": "height"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isImage",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "getFolder",
+            "return": {
+                "type": "MediaFolder"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setFolder",
+            "parameters": [
+                {
+                    "type": "MediaFolder",
+                    "name": "folder"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        },
+        {
+            "type": "method",
+            "name": "isRestricted",
+            "return": {
+                "type": "bool"
+            }
+        },
+        {
+            "type": "method",
+            "name": "setRestricted",
+            "parameters": [
+                {
+                    "type": "bool",
+                    "name": "restricted"
+                }
+            ],
+            "return": {
+                "type": "static"
+            }
+        }
+    ]
+}
