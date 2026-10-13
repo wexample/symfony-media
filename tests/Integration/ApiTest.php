@@ -117,6 +117,7 @@ class ApiTest extends AbstractMediaTestCase
         $controller = $this->service(MediaController::class);
 
         $this->signIn('ROLE_ADMIN');
+
         try {
             $controller->folder(new Request(content: '{"name":"x"}'));
             $this->fail('A form post arranged the library.');
