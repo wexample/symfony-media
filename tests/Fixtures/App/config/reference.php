@@ -1273,6 +1273,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * @psalm-type WexampleSymfonyMediaConfig = array{
  *     storage_dir?: scalar|Param|null, // Where the files are kept, out of the public directory: every file goes through the access check. // Default: "%kernel.project_dir%/var/media"
  *     thumbnail_sizes?: list<int|Param>,
+ *     upload_max_size?: int|Param, // The largest file the library takes, in bytes; null takes any size. Checked by the server, whatever the browser says. // Default: null
  *     view_role?: scalar|Param|null, // Role needed to browse the library and read its files. // Default: "ROLE_USER"
  *     manage_role?: scalar|Param|null, // Role needed to add, rename, move and delete media and folders. // Default: "ROLE_ADMIN"
  * }

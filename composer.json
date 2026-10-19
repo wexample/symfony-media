@@ -1,7 +1,7 @@
 {
   "name": "wexample/symfony-media",
   "description": "A media library: files kept for themselves, in folders, served behind an access check, with thumbnails; entities point at them with plain relations",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "type": "library",
   "license": "MIT",
   "autoload": {
@@ -23,10 +23,10 @@
   "require": {
     "php": ">=8.5",
     "ext-gd": "*",
-    "wexample/symfony-api": ">=13.0.0",
-    "wexample/symfony-helpers": ">=16.0.0",
+    "wexample/symfony-api": ">=14.0.0",
+    "wexample/symfony-helpers": ">=17.0.0",
     "wexample/php-pseudocode": ">=2.2.0",
-    "wexample/symfony-pseudocode": ">=3.0.0",
+    "wexample/symfony-pseudocode": ">=4.0.0",
     "symfony/mime": "^7.4 || ^8.0",
     "symfony/security-bundle": "^7.4 || ^8.0"
   },
