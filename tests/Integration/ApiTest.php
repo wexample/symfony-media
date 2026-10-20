@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\SortQueryOption;
+use Wexample\SymfonyApi\Helper\ApiResponseNormHelper;
 use Wexample\SymfonyMedia\Api\Controller\MediaController;
 use Wexample\SymfonyMedia\Api\Normalizer\Entity\Media\DefaultMediaNormalizer;
 use Wexample\SymfonyMedia\Service\MediaLibraryService;
@@ -38,8 +39,20 @@ class ApiTest extends AbstractMediaTestCase
 
         $data = $this->data($this->service(MediaController::class)->level($this->request('level', ['length' => 10])));
 
-        $this->assertSame(['a.png'], array_column($data['items'], 'name'));
+        $this->assertSame(['a.png'], array_column(array_column($data['items'], 'entity'), 'name'));
         $this->assertSame(1, $data['pagination']['total']);
+    }
+
+    public function testALevelHoldsToTheNormOfTheApi(): void
+    {
+        $this->service(MediaLibraryService::class)->createFolder('Photos');
+        $this->service(MediaStorage::class)->import($this->png(), 'a.png');
+        $this->signIn('ROLE_USER');
+
+        $response = json_decode($this->service(MediaController::class)->level($this->request('level', ['length' => 10]))->toJsonResponse()->getContent(), true);
+
+        $this->assertSame([], ApiResponseNormHelper::problems($response));
+        $this->assertSame(['media_folder', 'media'], array_column($response['data']['items'], 'type'));
     }
 
     public function testALevelKeepsWhatItsAcceptSays(): void
@@ -49,9 +62,9 @@ class ApiTest extends AbstractMediaTestCase
         $storage->import($this->text(), 'notes.txt');
         $this->signIn('ROLE_USER');
 
-        $list = fn (string $accept) => array_column($this->data(
+        $list = fn (string $accept) => array_column(array_column($this->data(
             $this->service(MediaController::class)->level($this->request('level', ['length' => 10, 'accept' => $accept]))
-        )['items'], 'name');
+        )['items'], 'entity'), 'name');
 
         $this->assertSame(['photo.png'], $list('image/*'));
         $this->assertSame(['notes.txt'], $list('.TXT'));

@@ -112,9 +112,14 @@ class MediaController extends AbstractApiController
         $pagination = self::getQueryOptionPagination($request);
         $level = $this->library->level($folder, $pagination->getOffset(), $pagination->length ?? self::LIST_PAGE_LENGTH, $this->isGranted(MediaVoter::MANAGE), $this->acceptOption($request));
 
+        // Each item as every list of the api gives it, `{type, entity}`: a
+        // folder and a media described alike, told apart by their type.
         return self::apiResponsePaginated(
             pagination: $pagination->withTotal($level['total']),
-            items: $level['items']
+            items: array_map(static fn (array $item): array => [
+                'type' => 'directory' === $item['type'] ? 'media_folder' : 'media',
+                'entity' => $item,
+            ], $level['items'])
         );
     }
 
