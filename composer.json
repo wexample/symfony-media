@@ -1,7 +1,7 @@
 {
   "name": "wexample/symfony-media",
   "description": "A media library: files kept for themselves, in folders, served behind an access check, with thumbnails; entities point at them with plain relations",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "type": "library",
   "license": "MIT",
   "autoload": {
