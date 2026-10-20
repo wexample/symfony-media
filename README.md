@@ -1,6 +1,6 @@
 # symfony-media
 
-Version: 4.0.0
+Version: 5.0.0
 
 ## What it keeps
 
@@ -85,7 +85,7 @@ The suite includes packages for configuration management, file handling, prompts
 - php: >=8.5
 - ext-gd: *
 - wexample/symfony-api: >=14.0.0
-- wexample/symfony-helpers: >=17.0.0
+- wexample/symfony-helpers: >=18.0.0
 - wexample/php-pseudocode: >=2.2.0
 - wexample/symfony-pseudocode: >=4.0.0
 - symfony/mime: ^7.4 || ^8.0
