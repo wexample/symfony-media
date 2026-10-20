@@ -15,6 +15,11 @@ services:
         resource: '../../Api/Controller/'
         tags: ['controller.service_arguments']
 
+    # A media described for the engines, inside an entity's schema.org data.
+    Wexample\SymfonyMedia\Normalizer\:
+        resource: '../../Normalizer/*'
+        tags: ['serializer.normalizer']
+
     Wexample\SymfonyMedia\Api\Normalizer\:
         resource: '../../Api/Normalizer/*'
         tags: ['serializer.normalizer']
