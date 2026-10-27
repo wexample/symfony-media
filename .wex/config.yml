@@ -4,7 +4,7 @@ git:
 global:
   name: symfony-media
   type: php-package
-  version: 5.0.2
+  version: 6.0.0
 wex:
   migration: 3
   version: 6.0.150
