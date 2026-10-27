@@ -37,7 +37,7 @@ use Wexample\SymfonyMedia\Service\MediaLibraryService;
  * entities, the way symfony-api lists them (`list`), for a screen showing
  * the files themselves rather than the folders holding them.
  */
-#[Route(path: 'api/media/', name: 'api_media_')]
+#[Route(path: '_api/media/', name: 'api_media_')]
 class MediaController extends AbstractApiController
 {
     final public const string ROUTE_LIST = 'list';
