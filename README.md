@@ -1,6 +1,6 @@
 # symfony-media
 
-Version: 6.0.2
+Version: 6.0.3
 
 A media library: files kept for themselves, in folders, served behind an access check, with thumbnails; entities point at them with plain relations
 
