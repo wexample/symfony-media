@@ -41,6 +41,23 @@ class AccessTest extends AbstractMediaTestCase
         $this->assertSame('image/webp', $thumbnail->headers->get('Content-Type'));
     }
 
+    public function testTheETagFollowsTheFileWithoutReadingIt(): void
+    {
+        $storage = $this->service(MediaStorage::class);
+        $media = $storage->import($this->png(), 'a.png');
+        $controller = $this->service(MediaFileController::class);
+        $this->signIn('ROLE_USER');
+
+        $etag = $controller->file((string) $media->getId(), new Request())->getEtag();
+        $this->assertNotNull($etag);
+        $this->assertSame($etag, $controller->file((string) $media->getId(), new Request())->getEtag());
+
+        // Other content in the same place is another version.
+        file_put_contents($storage->getPath($media), file_get_contents($this->png(800, 400)));
+        clearstatcache();
+        $this->assertNotSame($etag, $controller->file((string) $media->getId(), new Request())->getEtag());
+    }
+
     public function testAnUnknownOrMalformedIdIsNotFound(): void
     {
         $this->signIn('ROLE_USER');

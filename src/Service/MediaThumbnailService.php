@@ -18,6 +18,15 @@ use Wexample\SymfonyMedia\Entity\Media;
 class MediaThumbnailService
 {
     /**
+     * The largest image drawn, in pixels. GD decodes the whole picture before
+     * scaling it, at about four bytes a pixel: fifty million pixels already
+     * take some 200 MB. A file whose header announces more — a photo too large
+     * as much as a few kilobytes of png claiming to be a billion pixels — has
+     * no thumbnail instead of exhausting the worker's memory.
+     */
+    public const int MAX_PIXELS = 50_000_000;
+
+    /**
      * @param list<int> $sizes
      */
     public function __construct(
@@ -42,7 +51,10 @@ class MediaThumbnailService
     public function supports(Media $media): bool
     {
         return $media->isImage()
-            && in_array($media->getMimeType(), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
+            && in_array($media->getMimeType(), ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true)
+            // The dimensions stored are the file's own header, read when it
+            // was taken in (MediaStorage), which is what GD would allocate for.
+            && (int) $media->getWidth() * (int) $media->getHeight() <= self::MAX_PIXELS;
     }
 
     /**
@@ -120,6 +132,17 @@ class MediaThumbnailService
             throw new RuntimeException(sprintf('The thumbnail directory "%s" cannot be created.', dirname($target)));
         }
 
-        imagewebp($image, $target, 80);
+        // Drawn beside the thumbnail and moved in place once whole: a request
+        // finding the file, which getPath() takes as drawn, never reads one
+        // half-written, nor one a crash left truncated.
+        $temporary = $target.'.'.bin2hex(random_bytes(6)).'.part';
+
+        if (! imagewebp($image, $temporary, 80) || ! rename($temporary, $target)) {
+            if (is_file($temporary)) {
+                unlink($temporary);
+            }
+
+            throw new RuntimeException(sprintf('The thumbnail "%s" cannot be written.', $target));
+        }
     }
 }

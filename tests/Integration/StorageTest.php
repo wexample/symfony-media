@@ -54,6 +54,30 @@ class StorageTest extends AbstractMediaTestCase
         $this->service(MediaThumbnailService::class)->getPath($media, $storage->getPath($media), 333);
     }
 
+    public function testAnImageTooLargeToDecodeHasNoThumbnail(): void
+    {
+        $storage = $this->service(MediaStorage::class);
+        $thumbnails = $this->service(MediaThumbnailService::class);
+        $media = $storage->import($this->png(), 'bomb.png');
+
+        // What a few kilobytes of png can announce in their header; GD would
+        // allocate for it before drawing a single pixel.
+        $media->setDimensions(100_000, 100_000);
+
+        $this->assertFalse($thumbnails->supports($media));
+        $this->assertNull($thumbnails->getPath($media, $storage->getPath($media), 160));
+    }
+
+    public function testADrawnThumbnailLeavesNoPartialFileBehind(): void
+    {
+        $storage = $this->service(MediaStorage::class);
+        $media = $storage->import($this->png(), 'a.png');
+
+        $thumbnail = $this->service(MediaThumbnailService::class)->getPath($media, $storage->getPath($media), 160);
+
+        $this->assertSame([basename($thumbnail)], array_values(array_diff(scandir(dirname($thumbnail)), ['.', '..'])));
+    }
+
     public function testASmallImageIsNotEnlarged(): void
     {
         $storage = $this->service(MediaStorage::class);

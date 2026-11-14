@@ -153,7 +153,12 @@ final class MediaFileController
         string $disposition,
         string $name
     ): BinaryFileResponse {
-        $response = new BinaryFileResponse($path, headers: ['Content-Type' => $mimeType], autoEtag: true, autoLastModified: true);
+        $response = new BinaryFileResponse($path, headers: ['Content-Type' => $mimeType], autoLastModified: true);
+        // Not autoEtag, which reads and hashes the whole file at every request:
+        // whatever writes new content there changes its size or its date, so
+        // the path with those two tells its versions apart for the cost of a stat.
+        $file = $response->getFile();
+        $response->setEtag(hash('xxh128', $path."\0".$file->getSize()."\0".$file->getMTime()));
         $response->setContentDisposition($disposition, $name, $this->asciiFallback($name));
         $response->setPrivate();
         $response->headers->set('X-Content-Type-Options', 'nosniff');
