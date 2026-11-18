@@ -2,7 +2,6 @@
 
 namespace Wexample\SymfonyMedia\Api\Controller;
 
-use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,6 +10,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
+use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use Wexample\SymfonyApi\Api\Attribute\ApiResponseData;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\LengthQueryOption;
 use Wexample\SymfonyApi\Api\Attribute\QueryOption\PageQueryOption;
