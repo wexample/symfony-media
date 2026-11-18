@@ -29,6 +29,16 @@ wexample_symfony_media:
     manage_role: ROLE_ADMIN                           # add, rename, move, delete
 ```
 
+## Credit
+
+A file someone else made carries what is owed to them — who made it, its license, where it was taken from —, given whole from one source:
+
+```php
+$media->setCredit('Jane Doe', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0', 'https://commons.wikimedia.org/wiki/File:Portrait.jpg');
+```
+
+`hasCredit()` tells a page whether to show one. The API's `MediaDto` gives the four fields; the schema.org description of a media adds `creator`, `creditText`, `license` and `acquireLicensePage`, what the engines read on an image. A file of one's own has none.
+
 ## Reading
 
 `GET /_media/{id}` sends the file, `GET /_media/{id}/thumbnail/{width}` a webp copy drawn the first time it is asked for, at one of the configured widths, never larger than the original (GD: jpeg, png, gif, webp). Both need `MEDIA_VIEW`. A file the browser shows safely — a raster image, a PDF, a sound, a video, plain text — is sent inline; anything else, an SVG or an HTML file among them, is downloaded, and every answer is sandboxed (`Content-Security-Policy: sandbox`). `?download=1` downloads whatever it is.
