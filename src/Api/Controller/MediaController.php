@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyMedia\Api\Controller;
 
+use Wexample\SymfonyApi\Api\Attribute\ApiAccess;
 use JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +39,7 @@ use Wexample\SymfonyMedia\Service\MediaLibraryService;
  * the files themselves rather than the folders holding them.
  */
 #[Route(path: '_api/media/', name: 'api_media_')]
+#[ApiAccess(ApiAccess::CONTROLLER, "MediaVoter: VIEW to read, MANAGE to change")]
 class MediaController extends AbstractApiController
 {
     final public const string ROUTE_LIST = 'list';
