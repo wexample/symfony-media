@@ -2,7 +2,10 @@
 
 namespace Wexample\SymfonyMedia\Tests\Integration;
 
+use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
+use Wexample\SymfonyHelpers\Interface\HeadStructuredDataProviderInterface;
+use Wexample\SymfonyMedia\Normalizer\MediaSchemaOrgNormalizer;
 use Wexample\SymfonyMedia\Repository\MediaRepository;
 use Wexample\SymfonyMedia\Service\MediaStorage;
 use Wexample\SymfonyMedia\Service\MediaThumbnailService;
@@ -85,5 +88,19 @@ class StorageTest extends AbstractMediaTestCase
 
         $thumbnail = $this->service(MediaThumbnailService::class)->getPath($media, $storage->getPath($media), 480);
         $this->assertSame([100, 50], array_slice(getimagesize($thumbnail), 0, 2));
+    }
+
+    public function testSomeoneElsesWorkKeepsItsCreditAndTellsTheEngines(): void
+    {
+        $media = $this->service(MediaStorage::class)->import($this->png(), 'portrait.png');
+        $media->setCredit('Jane Doe', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0', 'https://commons.wikimedia.org/wiki/File:Portrait.png');
+        $this->service(EntityManagerInterface::class)->flush();
+
+        $this->assertTrue($media->hasCredit());
+        $schema = $this->service(MediaSchemaOrgNormalizer::class)->normalize($media, HeadStructuredDataProviderInterface::FORMAT_SCHEMA_ORG);
+        $this->assertSame(['@type' => 'Person', 'name' => 'Jane Doe'], $schema['creator']);
+        $this->assertSame('https://creativecommons.org/licenses/by-sa/4.0', $schema['license']);
+        $this->assertSame('https://commons.wikimedia.org/wiki/File:Portrait.png', $schema['acquireLicensePage']);
+        $this->assertFalse($this->service(MediaStorage::class)->import($this->png(), 'own.png')->hasCredit());
     }
 }

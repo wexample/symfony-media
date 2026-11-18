@@ -26,6 +26,14 @@ class MediaDto extends AbstractEntityDto
 
     public bool $restricted;
 
+    public ?string $author;
+
+    public ?string $license;
+
+    public ?string $licenseUrl;
+
+    public ?string $sourceUrl;
+
     /**
      * @param Media $entity
      */
@@ -40,6 +48,10 @@ class MediaDto extends AbstractEntityDto
         $dto->width = $entity->getWidth();
         $dto->height = $entity->getHeight();
         $dto->restricted = $entity->isRestricted();
+        $dto->author = $entity->getAuthor();
+        $dto->license = $entity->getLicense();
+        $dto->licenseUrl = $entity->getLicenseUrl();
+        $dto->sourceUrl = $entity->getSourceUrl();
 
         return $dto;
     }

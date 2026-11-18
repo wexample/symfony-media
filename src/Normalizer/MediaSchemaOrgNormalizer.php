@@ -11,7 +11,8 @@ use Wexample\SymfonyMedia\Entity\Media;
 /**
  * A media held by a described entity — a project's cover — as the engines
  * read it: an ImageObject, or a MediaObject for anything else, at the address
- * it is served from. A restricted one is left out: nobody outside may open it.
+ * it is served from, with its credit — the author, the license — when it has
+ * one. A restricted one is left out: nobody outside may open it.
  */
 final class MediaSchemaOrgNormalizer implements NormalizerInterface
 {
@@ -54,6 +55,10 @@ final class MediaSchemaOrgNormalizer implements NormalizerInterface
             ),
             'width' => $data->getWidth(),
             'height' => $data->getHeight(),
+            'creator' => null === $data->getAuthor() ? null : ['@type' => 'Person', 'name' => $data->getAuthor()],
+            'creditText' => $data->getAuthor(),
+            'license' => $data->getLicenseUrl(),
+            'acquireLicensePage' => $data->getSourceUrl(),
         ], static fn (mixed $value): bool => null !== $value);
     }
 }

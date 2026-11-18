@@ -60,6 +60,29 @@ class Media extends AbstractEntity implements Stringable
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     protected bool $restricted = false;
 
+    /**
+     * Who made the file, as their work is to be credited; null for a file of
+     * one's own. With the license and where it was taken from, what a page
+     * showing someone else's work owes them.
+     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $author = null;
+
+    /**
+     * Its short name: `CC BY-SA 4.0`, `Public domain`.
+     */
+    #[ORM\Column(type: Types::STRING, length: 64, nullable: true)]
+    protected ?string $license = null;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $licenseUrl = null;
+
+    /**
+     * The page it was taken from: a Wikimedia Commons file, a stock photo.
+     */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    protected ?string $sourceUrl = null;
+
     #[ORM\ManyToOne(targetEntity: MediaFolder::class, inversedBy: 'media')]
     #[ORM\JoinColumn(nullable: true)]
     protected ?MediaFolder $folder = null;
@@ -172,5 +195,48 @@ class Media extends AbstractEntity implements Stringable
         $this->restricted = $restricted;
 
         return $this;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    public function getLicense(): ?string
+    {
+        return $this->license;
+    }
+
+    public function getLicenseUrl(): ?string
+    {
+        return $this->licenseUrl;
+    }
+
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    /**
+     * What is owed to whoever made the file, all at once: a credit is given
+     * whole, from one source.
+     */
+    public function setCredit(
+        ?string $author,
+        ?string $license,
+        ?string $licenseUrl = null,
+        ?string $sourceUrl = null
+    ): static {
+        $this->author = null === $author ? null : mb_substr($author, 0, 255);
+        $this->license = null === $license ? null : mb_substr($license, 0, 64);
+        $this->licenseUrl = $licenseUrl;
+        $this->sourceUrl = $sourceUrl;
+
+        return $this;
+    }
+
+    public function hasCredit(): bool
+    {
+        return null !== $this->author || null !== $this->license || null !== $this->sourceUrl;
     }
 }
